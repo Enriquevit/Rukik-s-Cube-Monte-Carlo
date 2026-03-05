@@ -1,3 +1,5 @@
+import random
+
 # Represents a single face of the Rubik's Cube
 class Side:
     def __init__(self, color):
@@ -187,6 +189,59 @@ class Cube:
                 F.grid[i][1] = D.grid[i][1]
                 D.grid[i][1] = B.grid[2-i][1]
                 B.grid[2-i][1] = temp[i]
+
+    def apply_move(self, mv: str):
+        """Apply a single move in standard notation, e.g. "U", "U'", "F", "R'".
+
+        This centralizes move application so external code can use the same
+        legal-turn logic as the cube implementation.
+        """
+        prime = mv.endswith("'")
+        face = mv[0]
+        clockwise = not prime
+        if face == 'U':
+            self.rotate_U(clockwise=clockwise)
+        elif face == 'D':
+            self.rotate_D(clockwise=clockwise)
+        elif face == 'F':
+            self.rotate_F(clockwise=clockwise)
+        elif face == 'B':
+            self.rotate_B(clockwise=clockwise)
+        elif face == 'L':
+            self.rotate_L(clockwise=clockwise)
+        elif face == 'R':
+            self.rotate_R(clockwise=clockwise)
+        elif face == 'M':
+            # middle slice
+            self.rotate_M(clockwise=clockwise)
+        else:
+            raise ValueError(f"Unknown move: {mv}")
+
+    def generate_scramble(self, moves: int = 20):
+        """Generate a scramble sequence of legal single-face quarter turns.
+
+        Rules applied:
+        - Moves are chosen from the six faces U,D,F,B,L,R with optional prime (') suffix.
+        - Do not repeat the same face twice in a row (that's allowed on a real cube but
+          usually avoided in scramble notation).
+        Returns the list of move strings.
+        """
+        faces = ['U', 'D', 'F', 'B', 'L', 'R']
+        suffixes = ['', "'"]
+        seq = []
+        prev_face = None
+        for _ in range(moves):
+            choice = random.choice(faces) if prev_face is None else random.choice([f for f in faces if f != prev_face])
+            suf = random.choice(suffixes)
+            mv = choice + suf
+            seq.append(mv)
+            prev_face = choice
+        return seq
+
+    def reset(self):
+        """Reset the cube to the solved state."""
+        # Reinitialize sides to their original colors
+        self.__init__()
 
     def display(self):
         # Simple text-based visualization of the cube in a net layout
