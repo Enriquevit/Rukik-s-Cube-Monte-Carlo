@@ -110,20 +110,20 @@ class Cube:
         U, R, D, L = self.sides['U'], self.sides['R'], self.sides['D'], self.sides['L']
         if clockwise:
             temp = U.grid[0][:]
-            U.grid[0] = [R.grid[i][2] for i in range(3)]
+            U.grid[0] = [R.grid[i][2] for i in range(2, -1, -1)]
             for i in range(3):
-                R.grid[i][2] = D.grid[2][2-i]
-            D.grid[2] = [L.grid[i][0] for i in range(3)]
+                R.grid[i][2] = D.grid[2][i]
+            D.grid[2] = [L.grid[i][0] for i in range(2, -1, -1)]
             for i in range(3):
-                L.grid[i][0] = temp[2-i]
+                L.grid[i][0] = temp[i]
         else:
             temp = U.grid[0][:]
-            U.grid[0] = [L.grid[i][0] for i in range(2, -1, -1)]
+            U.grid[0] = [L.grid[i][0] for i in range(3)]
             for i in range(3):
-                L.grid[i][0] = D.grid[2][i]
-            D.grid[2] = [R.grid[i][2] for i in range(2, -1, -1)]
+                L.grid[i][0] = D.grid[2][2-i]
+            D.grid[2] = [R.grid[i][2] for i in range(3)]
             for i in range(3):
-                R.grid[i][2] = temp[i]
+                R.grid[i][2] = temp[2-i]
 
     def rotate_L(self, clockwise=True):
         if clockwise:
