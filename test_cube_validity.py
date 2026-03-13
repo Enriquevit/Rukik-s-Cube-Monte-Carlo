@@ -261,7 +261,7 @@ def test_3d_visualizer_compatibility():
     cube = Cube()
     
     # Apply some moves
-    moves = ['R', 'U', "'", 'R', "'", 'U', "R", "U", "R"]
+    moves = ["R", "U'", "R'", "U", "R", "U", "R"]
     for move in moves:
         cube.apply_move(move)
     
