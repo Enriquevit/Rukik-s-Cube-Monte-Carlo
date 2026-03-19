@@ -60,11 +60,41 @@ Coordinate system: +x=R, -x=L, +y=U, -y=D, +z=B, -z=F
 | Move | Cycle | Derivation |
 |------|-------|-----------|
 | U | F→R, R→B, B→L, L→F | -90deg about +y |
-| D | F→R, R→B, B→L, L→F | same cycle, different positions |
+| D | F→L, L→B, B→R, R→F | +90deg about +y (opposite to U) |
 | R | U→B, B→D, D→F, F→U | +90deg about +x |
 | L | U→F, F→D, D→B, B→U | inverse of R |
 | F | U→R, R→D, D→L, L→U | CW from -z |
 | B | U→L, L→D, D→R, R→U | inverse of F |
+
+**Corner Slot Faces** (index → name → face triple, ordered so index 0 = the U/D face):
+
+| Slot | Name | Face 0 | Face 1 | Face 2 |
+|------|------|--------|--------|--------|
+| 0 | URF | U | R | F |
+| 1 | UFL | U | F | L |
+| 2 | ULB | U | L | B |
+| 3 | UBR | U | B | R |
+| 4 | DFR | D | F | R |
+| 5 | DLF | D | L | F |
+| 6 | DBL | D | B | L |
+| 7 | DRB | D | R | B |
+
+**Edge Slot Faces** (index → name → face pair, ordered so index 0 = the U/D face when in U/D layer, else F/B face):
+
+| Slot | Name | Face 0 | Face 1 |
+|------|------|--------|--------|
+| 0 | UR | U | R |
+| 1 | UF | U | F |
+| 2 | UL | U | L |
+| 3 | UB | U | B |
+| 4 | DR | D | R |
+| 5 | DF | D | F |
+| 6 | DL | D | L |
+| 7 | DB | D | B |
+| 8 | FR | F | R |
+| 9 | FL | F | L |
+| 10 | BL | B | L |
+| 11 | BR | B | R |
 
 **Position Cycles** (piece at first index goes to second, etc.):
 
