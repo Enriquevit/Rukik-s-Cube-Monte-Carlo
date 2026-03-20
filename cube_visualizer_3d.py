@@ -67,18 +67,19 @@ class Cube3DVisualizer:
 
     def _face_axes(self, face):
         # returns (center, u_axis, v_axis) for face in local cube coords
+        # Aligned with cube3.py: +z = Back, -z = Front
         if face == 'F':
-            return ((0, 0, 1), (1, 0, 0), (0, -1, 0))
-        if face == 'B':
             return ((0, 0, -1), (-1, 0, 0), (0, -1, 0))
+        if face == 'B':
+            return ((0, 0, 1), (1, 0, 0), (0, -1, 0))
         if face == 'U':
-            return ((0, 1, 0), (1, 0, 0), (0, 0, -1))
+            return ((0, 1, 0), (1, 0, 0), (0, 0, 1))
         if face == 'D':
-            return ((0, -1, 0), (1, 0, 0), (0, 0, 1))
+            return ((0, -1, 0), (1, 0, 0), (0, 0, -1))
         if face == 'L':
-            return ((-1, 0, 0), (0, 0, -1), (0, -1, 0))
+            return ((-1, 0, 0), (0, 0, 1), (0, -1, 0))
         if face == 'R':
-            return ((1, 0, 0), (0, 0, 1), (0, -1, 0))
+            return ((1, 0, 0), (0, 0, -1), (0, -1, 0))
 
     def _build_sticker_quads(self):
         # Each face spans from -1..1 in its local u/v coords. Stickers are 3x3.
@@ -131,8 +132,18 @@ class Cube3DVisualizer:
             proj = [self.project(rotate_point(p, 0, 0)) for p in quad]
             # compute average depth
             avg_z = sum(p[2] for p in proj) / 4.0
-            # map face sticker color
-            color = COLORS.get(self.cube.get_sticker(face, r, c), (128, 128, 128))
+            # mirror sticker coords to match cube3 FACE_STICKER_MAP layout
+            if face in ('U', 'D'):
+                sr, sc = 2 - r, c
+            else:
+                sr, sc = r, 2 - c
+            sticker = self.cube.get_sticker(face, sr, sc)
+            # Swap green/blue to match common physical cube color scheme
+            if sticker == 'G':
+                sticker = 'B'
+            elif sticker == 'B':
+                sticker = 'G'
+            color = COLORS.get(sticker, (128, 128, 128))
             points = [(p[0], p[1]) for p in proj]
             polygons.append((avg_z, points, color))
 
@@ -187,13 +198,12 @@ class Cube3DVisualizer:
                         self.last_mouse = ev.pos
                 elif ev.type == pygame.KEYDOWN:
                     shift = ev.mod & pygame.KMOD_SHIFT
-                    # (no-shift move, shift move) — corrected for the
-                    # z-axis flip between cube3 (+z=B) and visualizer (+z=F).
+                    # (no-shift move, shift move)
                     move_keys = {
-                        pygame.K_u: ("U'", "U"),
-                        pygame.K_d: ("D'", "D"),
-                        pygame.K_r: ("R'", "R"),
-                        pygame.K_l: ("L'", "L"),
+                        pygame.K_u: ("U", "U'"),
+                        pygame.K_d: ("D", "D'"),
+                        pygame.K_r: ("R", "R'"),
+                        pygame.K_l: ("L", "L'"),
                         pygame.K_f: ("B'", "B"),
                         pygame.K_b: ("F'", "F"),
                     }
