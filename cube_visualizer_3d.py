@@ -14,6 +14,7 @@ import random
 import pygame
 from cube3 import Cube
 from cross_solver import CrossSolver
+from ll_algorithms import ALL_OLL, ALL_PLL, invert_alg
 
 
 COLORS = {
@@ -156,7 +157,7 @@ class Cube3DVisualizer:
 
         # overlay text
         font = pygame.font.SysFont(None, 20)
-        lines = ["U/D/R/L/F/B: moves  |  +Shift: inverse  |  SPACE: scramble  |  C: solve cross  |  0: reset  |  Q/ESC: quit"]
+        lines = ["U/D/R/L/F/B: moves  |  +Shift: inverse  |  SPACE: scramble  |  C: solve cross  |  V: set F2L  |  0: reset  |  Q/ESC: quit"]
         for i, ln in enumerate(lines):
             surf = font.render(ln, True, (220, 220, 220))
             self.screen.blit(surf, (10, 10 + i * 18))
@@ -175,6 +176,37 @@ class Cube3DVisualizer:
             self.cube.log_state()
             self.draw()
             pygame.time.delay(delay_ms)
+
+    def set_f2l_state(self):
+        """Set cube to F2L-solved with a random last layer (D/yellow).
+
+        Starts from solved, then applies inverse PLL and inverse OLL
+        algorithms (with random D-layer AUF adjustments) so only the
+        D-layer corners (4-7) and D-layer edges (4-7) are disturbed.
+        Cross (U edges 0-3), U corners (0-3), and mid edges (8-11)
+        remain solved.
+        """
+        self.cube = Cube()
+
+        # Inverse PLL — creates a PLL case on D layer
+        pll = random.choice(ALL_PLL)
+        self.cube.apply_moves(invert_alg(pll))
+
+        # Random D-layer AUF
+        auf = random.choice(['', 'D', "D'", 'D2'])
+        if auf:
+            self.cube.apply_move(auf)
+
+        # Inverse OLL — creates an OLL case on D layer
+        oll = random.choice(ALL_OLL)
+        self.cube.apply_moves(invert_alg(oll))
+
+        # Another random D-layer AUF
+        auf2 = random.choice(['', 'D', "D'", 'D2'])
+        if auf2:
+            self.cube.apply_move(auf2)
+
+        self.cube.log_state()
 
     def animate_scramble(self, moves=20, delay_ms=120):
         seq = self.cube.scramble(moves)
@@ -225,6 +257,8 @@ class Cube3DVisualizer:
                         self.animate_scramble(20, delay_ms=80)
                     elif ev.key == pygame.K_c:
                         self.animate_cross_solve(delay_ms=100)
+                    elif ev.key == pygame.K_v:
+                        self.set_f2l_state()
                     elif ev.key == pygame.K_0:
                         self.cube = Cube()
                         self.cube.log_state()
