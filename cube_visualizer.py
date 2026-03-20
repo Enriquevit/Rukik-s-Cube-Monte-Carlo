@@ -4,7 +4,7 @@ import time
 
 import pygame
 
-from cube import Cube
+from cube3 import Cube
 
 
 # Simple 2D net visualizer for the Cube class using pygame
@@ -74,8 +74,8 @@ class Visualizer:
             gx, gy = pos
             ox = self.margin + gx * self.square
             oy = self.margin + gy * self.square
-            grid = self.cube.sides[face].grid
-            self.draw_face(grid, ox, oy)
+            face_grid = [[self.cube.get_sticker(face, r, c) for c in range(3)] for r in range(3)]
+            self.draw_face(face_grid, ox, oy)
 
         # draw instructions
         lines = [
@@ -91,7 +91,7 @@ class Visualizer:
         pygame.display.flip()
 
     def animate_scramble(self, moves=20, delay=0.12):
-        seq = self.cube.generate_scramble(moves)
+        seq = self.cube.scramble(moves)
         for mv in seq:
             # use the cube's apply_move so the cube logic is authoritative
             self.cube.apply_move(mv)
@@ -129,7 +129,7 @@ def main():
                     viz.cube = cube
                     viz.draw()
                 elif event.key == pygame.K_m:
-                    mv = random.choice(['U', "U'", 'D', "D'", 'F', "F'", 'B', "B'", 'L', "L'", 'R', "R'", 'M', "M'"])
+                    mv = random.choice(['U', "U'", 'D', "D'", 'F', "F'", 'B', "B'", 'L', "L'", 'R', "R'"])
                     viz.apply_move(mv)
                     viz.draw()
                 elif event.key == pygame.K_q or event.key == pygame.K_ESCAPE:

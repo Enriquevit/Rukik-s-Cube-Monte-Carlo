@@ -12,7 +12,7 @@ and drawing filled polygons with painter's sorting.
 import math
 import random
 import pygame
-from cube import Cube
+from cube3 import Cube
 
 
 COLORS = {
@@ -132,7 +132,7 @@ class Cube3DVisualizer:
             # compute average depth
             avg_z = sum(p[2] for p in proj) / 4.0
             # map face sticker color
-            color = COLORS.get(self.cube.sides[face].grid[r][c], (128, 128, 128))
+            color = COLORS.get(self.cube.get_sticker(face, r, c), (128, 128, 128))
             points = [(p[0], p[1]) for p in proj]
             polygons.append((avg_z, points, color))
 
@@ -156,7 +156,7 @@ class Cube3DVisualizer:
         self.cube.apply_move(mv)
 
     def animate_scramble(self, moves=20, delay_ms=120):
-        seq = self.cube.generate_scramble(moves)
+        seq = self.cube.scramble(moves)
         for mv in seq:
             self.cube.apply_move(mv)
             self.draw()
@@ -185,9 +185,18 @@ class Cube3DVisualizer:
                         self.pitch += dy * 0.01
                         self.last_mouse = ev.pos
                 elif ev.type == pygame.KEYDOWN:
-                    if ev.key == pygame.K_SPACE:
+                    shift = ev.mod & pygame.KMOD_SHIFT
+                    move_keys = {
+                        pygame.K_u: 'U', pygame.K_d: 'D',
+                        pygame.K_f: 'F', pygame.K_b: 'B',
+                        pygame.K_l: 'L', pygame.K_r: 'R',
+                    }
+                    if ev.key in move_keys:
+                        move = move_keys[ev.key] + ("'" if shift else "")
+                        self.cube.apply_move(move)
+                    elif ev.key == pygame.K_SPACE:
                         self.animate_scramble(20, delay_ms=80)
-                    elif ev.key == pygame.K_r:
+                    elif ev.key == pygame.K_r and not shift:
                         self.cube = Cube()
                     elif ev.key == pygame.K_q or ev.key == pygame.K_ESCAPE:
                         running = False
