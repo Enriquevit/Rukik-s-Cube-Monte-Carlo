@@ -248,6 +248,73 @@ class Cube:
     def get_edge_position(self, idx):
         return self.edges[idx]
 
+    # ============================================================
+    # Serialization
+    # ============================================================
+
+    _VALID_COLORS = frozenset('WYGBRO')
+
+    def serialize(self) -> str:
+        """Return a compact one-line string representing the cube state.
+
+        Format: ``WRG/WGO/.../YRB|WR/WG/.../BR``
+
+        - ``|`` separates corners from edges
+        - ``/`` separates individual pieces
+        - each piece is its sticker colors concatenated
+        """
+        corners_str = '/'.join(''.join(c) for c in self.corners)
+        edges_str = '/'.join(''.join(e) for e in self.edges)
+        return f"{corners_str}|{edges_str}"
+
+    @classmethod
+    def deserialize(cls, s: str) -> 'Cube':
+        """Create a Cube from a serialized string produced by serialize().
+
+        Raises ValueError for malformed input.  Paste a line from
+        logs/cube_states.log directly into this call to recreate a
+        state as a test fixture.
+        """
+        parts = s.strip().split('|')
+        if len(parts) != 2:
+            raise ValueError(f"Expected 'corners|edges', got {len(parts)} section(s)")
+        corner_parts = parts[0].split('/')
+        edge_parts = parts[1].split('/')
+        if len(corner_parts) != 8:
+            raise ValueError(f"Expected 8 corners, got {len(corner_parts)}")
+        if len(edge_parts) != 12:
+            raise ValueError(f"Expected 12 edges, got {len(edge_parts)}")
+        corners = []
+        for i, cp in enumerate(corner_parts):
+            if len(cp) != 3:
+                raise ValueError(f"Corner {i} must have 3 stickers, got {cp!r}")
+            if not all(c in cls._VALID_COLORS for c in cp):
+                raise ValueError(f"Corner {i} contains invalid color in {cp!r}")
+            corners.append(list(cp))
+        edges = []
+        for i, ep in enumerate(edge_parts):
+            if len(ep) != 2:
+                raise ValueError(f"Edge {i} must have 2 stickers, got {ep!r}")
+            if not all(c in cls._VALID_COLORS for c in ep):
+                raise ValueError(f"Edge {i} contains invalid color in {ep!r}")
+            edges.append(list(ep))
+        cube = cls.__new__(cls)
+        cube.corners = corners
+        cube.edges = edges
+        return cube
+
+    def log_state(self, filepath: str = "logs/cube_states.log") -> None:
+        """Append the serialized cube state as one line to *filepath*.
+
+        Creates the directory if it does not exist.
+        """
+        import os
+        dirpath = os.path.dirname(filepath)
+        if dirpath:
+            os.makedirs(dirpath, exist_ok=True)
+        with open(filepath, 'a') as f:
+            f.write(self.serialize() + '\n')
+
     def __repr__(self):
         return (f"Cube(corners={len(self.corners)}, edges={len(self.edges)}, "
                 f"solved={self.is_solved()})")

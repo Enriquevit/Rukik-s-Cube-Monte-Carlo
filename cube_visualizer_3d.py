@@ -159,6 +159,7 @@ class Cube3DVisualizer:
         seq = self.cube.scramble(moves)
         for mv in seq:
             self.cube.apply_move(mv)
+            self.cube.log_state()
             self.draw()
             pygame.time.delay(delay_ms)
 
@@ -199,10 +200,12 @@ class Cube3DVisualizer:
                     if ev.key in move_keys:
                         normal, shifted = move_keys[ev.key]
                         self.cube.apply_move(shifted if shift else normal)
+                        self.cube.log_state()
                     elif ev.key == pygame.K_SPACE:
                         self.animate_scramble(20, delay_ms=80)
                     elif ev.key == pygame.K_0:
                         self.cube = Cube()
+                        self.cube.log_state()
                     elif ev.key == pygame.K_q or ev.key == pygame.K_ESCAPE:
                         running = False
 

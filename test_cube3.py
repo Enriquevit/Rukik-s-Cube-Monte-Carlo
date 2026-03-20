@@ -528,3 +528,62 @@ class TestKnownAlgorithms:
         for _ in range(6):
             c.apply_moves(sune)
         assert c.is_solved()
+
+
+# ========== 12. Serialization ==========
+
+class TestSerialization:
+    SOLVED_STRING = (
+        "WRG/WGO/WOB/WBR/YGR/YOG/YBO/YRB"
+        "|"
+        "WR/WG/WO/WB/YR/YG/YO/YB/GR/GO/BO/BR"
+    )
+
+    def test_serialize_solved_cube(self):
+        """Solved cube serializes to known string."""
+        assert Cube().serialize() == self.SOLVED_STRING
+
+    def test_roundtrip_identity(self):
+        """serialize -> deserialize returns identical state."""
+        c = Cube()
+        c.apply_moves(["R", "U", "R'", "U'"])
+        s = c.serialize()
+        c2 = Cube.deserialize(s)
+        assert c2.corners == c.corners
+        assert c2.edges == c.edges
+
+    def test_roundtrip_scrambled(self):
+        """Roundtrip preserves a scrambled state."""
+        c = Cube()
+        c.scramble(20)
+        s = c.serialize()
+        c2 = Cube.deserialize(s)
+        assert c2.corners == c.corners
+        assert c2.edges == c.edges
+
+    def test_deserialize_known_string(self):
+        """Deserialize the solved string and verify specific stickers."""
+        c = Cube.deserialize(self.SOLVED_STRING)
+        assert c.corners[0] == ['W', 'R', 'G']  # URF corner
+        assert c.edges[0] == ['W', 'R']          # UR edge
+        assert c.is_solved()
+
+    def test_deserialize_missing_edges_section(self):
+        with pytest.raises(ValueError):
+            Cube.deserialize("WRG/WGO/WOB/WBR/YGR/YOG/YBO/YRB")
+
+    def test_deserialize_wrong_corner_count(self):
+        with pytest.raises(ValueError):
+            Cube.deserialize("WRG/WGO|WR/WG/WO/WB/YR/YG/YO/YB/GR/GO/BO/BR")
+
+    def test_deserialize_wrong_edge_count(self):
+        with pytest.raises(ValueError):
+            Cube.deserialize("WRG/WGO/WOB/WBR/YGR/YOG/YBO/YRB|WR/WG")
+
+    def test_deserialize_invalid_color(self):
+        with pytest.raises(ValueError):
+            Cube.deserialize("XRG/WGO/WOB/WBR/YGR/YOG/YBO/YRB|WR/WG/WO/WB/YR/YG/YO/YB/GR/GO/BO/BR")
+
+    def test_deserialize_wrong_piece_length(self):
+        with pytest.raises(ValueError):
+            Cube.deserialize("WRGX/WGO/WOB/WBR/YGR/YOG/YBO/YRB|WR/WG/WO/WB/YR/YG/YO/YB/GR/GO/BO/BR")

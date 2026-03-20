@@ -109,6 +109,9 @@ celerybeat.pid
 .venv
 env/
 venv/
+
+# Cube state logs
+logs/
 ENV/
 env.bak/
 venv.bak/
