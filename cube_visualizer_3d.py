@@ -144,7 +144,7 @@ class Cube3DVisualizer:
 
         # overlay text
         font = pygame.font.SysFont(None, 20)
-        lines = ["Drag: rotate  |  SPACE: scramble  |  R: reset  |  Q/ESC: quit"]
+        lines = ["U/D/R/L/F/B: moves  |  +Shift: inverse  |  SPACE: scramble  |  0: reset  |  Q/ESC: quit"]
         for i, ln in enumerate(lines):
             surf = font.render(ln, True, (220, 220, 220))
             self.screen.blit(surf, (10, 10 + i * 18))
@@ -186,17 +186,22 @@ class Cube3DVisualizer:
                         self.last_mouse = ev.pos
                 elif ev.type == pygame.KEYDOWN:
                     shift = ev.mod & pygame.KMOD_SHIFT
+                    # (no-shift move, shift move) — corrected for the
+                    # z-axis flip between cube3 (+z=B) and visualizer (+z=F).
                     move_keys = {
-                        pygame.K_u: 'U', pygame.K_d: 'D',
-                        pygame.K_f: 'F', pygame.K_b: 'B',
-                        pygame.K_l: 'L', pygame.K_r: 'R',
+                        pygame.K_u: ("U'", "U"),
+                        pygame.K_d: ("D'", "D"),
+                        pygame.K_r: ("R'", "R"),
+                        pygame.K_l: ("L'", "L"),
+                        pygame.K_f: ("B'", "B"),
+                        pygame.K_b: ("F'", "F"),
                     }
                     if ev.key in move_keys:
-                        move = move_keys[ev.key] + ("'" if shift else "")
-                        self.cube.apply_move(move)
+                        normal, shifted = move_keys[ev.key]
+                        self.cube.apply_move(shifted if shift else normal)
                     elif ev.key == pygame.K_SPACE:
                         self.animate_scramble(20, delay_ms=80)
-                    elif ev.key == pygame.K_r and not shift:
+                    elif ev.key == pygame.K_0:
                         self.cube = Cube()
                     elif ev.key == pygame.K_q or ev.key == pygame.K_ESCAPE:
                         running = False
