@@ -13,6 +13,7 @@ import math
 import random
 import pygame
 from cube3 import Cube
+from cross_solver import CrossSolver
 
 
 COLORS = {
@@ -155,7 +156,7 @@ class Cube3DVisualizer:
 
         # overlay text
         font = pygame.font.SysFont(None, 20)
-        lines = ["U/D/R/L/F/B: moves  |  +Shift: inverse  |  SPACE: scramble  |  0: reset  |  Q/ESC: quit"]
+        lines = ["U/D/R/L/F/B: moves  |  +Shift: inverse  |  SPACE: scramble  |  C: solve cross  |  0: reset  |  Q/ESC: quit"]
         for i, ln in enumerate(lines):
             surf = font.render(ln, True, (220, 220, 220))
             self.screen.blit(surf, (10, 10 + i * 18))
@@ -165,6 +166,15 @@ class Cube3DVisualizer:
     def apply_move(self, mv: str):
         # Delegate to Cube.apply_move for correctness
         self.cube.apply_move(mv)
+
+    def animate_cross_solve(self, delay_ms=120):
+        solver = CrossSolver()
+        moves, _ = solver.solve_cross(self.cube)
+        for mv in moves:
+            self.cube.apply_move(mv)
+            self.cube.log_state()
+            self.draw()
+            pygame.time.delay(delay_ms)
 
     def animate_scramble(self, moves=20, delay_ms=120):
         seq = self.cube.scramble(moves)
@@ -213,6 +223,8 @@ class Cube3DVisualizer:
                         self.cube.log_state()
                     elif ev.key == pygame.K_SPACE:
                         self.animate_scramble(20, delay_ms=80)
+                    elif ev.key == pygame.K_c:
+                        self.animate_cross_solve(delay_ms=100)
                     elif ev.key == pygame.K_0:
                         self.cube = Cube()
                         self.cube.log_state()
